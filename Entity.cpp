@@ -4,12 +4,12 @@
 #include "Structs.h"
 #include "Item.h"
 
-Entity::Entity(Tile (&rarray)[400], int x, int y, int width, char charinput) {
-	int findpos = y * width + x;
-	rarray[findpos].entAppend(this);
+Entity::Entity(VecMap2D* rarray, int x, int y, char charinput) {
+	int findpos = y * rarray->width + x;
+	rarray->VecMap[findpos]->entAppend(this);
 	pos_x = x;
 	pos_y = y;
-	occupied_tile = &rarray[findpos];
+	occupied_tile = rarray->VecMap[findpos];
 	hp = 100;
 	character = charinput;
 	/*Item fists;
@@ -17,33 +17,38 @@ Entity::Entity(Tile (&rarray)[400], int x, int y, int width, char charinput) {
 	equipped_item = &inventory[0];
 }
 
-void Entity::TileMove(Tile(&rarray)[400], int width, int x_offset, int y_offset) {
+void Entity::TileMove(VecMap2D* rarray, int x_offset, int y_offset) {
 	int new_pos_x = pos_x + x_offset;
 	int new_pos_y = pos_y + y_offset;
-	Tile* tile_new = &rarray[new_pos_y * width + new_pos_x];
-	
-	if (tile_new->isOccupied() == false && tile_new->isSolid() == false) {
-		
-		occupied_tile->entRemove();
-		tile_new->entAppend(this);
 
-		occupied_tile = tile_new;
-		old_pos_x = pos_x;
-		old_pos_y = pos_y;
-		pos_x = new_pos_x;
-		pos_y = new_pos_y;
+	if (new_pos_x > -1 || new_pos_y > -1) {
+		Tile* tile_new = rarray->VecMap[new_pos_y * rarray->width + new_pos_x];
+		if (tile_new->isOccupied() == false && tile_new->isSolid() == false) {
+
+			occupied_tile->entRemove();
+			tile_new->entAppend(this);
+
+			occupied_tile = tile_new;
+			old_pos_x = pos_x;
+			old_pos_y = pos_y;
+			pos_x = new_pos_x;
+			pos_y = new_pos_y;
+		}
+
+		else if (tile_new->isOccupied() == true) {
+			Attack(tile_new->getEnt());
+		}
+
+		else if (tile_new->isSolid() == true) {
+
+		}
+
+		else {
+			std::wcout << "Invalid tile." << std::endl;
+		}
 	}
-
-	else if (tile_new->isOccupied() == true) {
-		Attack(tile_new->getEnt());
-	}
-
-	else if (tile_new->isSolid() == true) {
-
-	}
-
 	else {
-		std::wcout << "Invalid tile." << std::endl;
+		std::cout << "Invalid tile!" << std::endl;
 	}
 }
 

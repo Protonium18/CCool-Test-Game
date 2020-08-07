@@ -11,8 +11,8 @@ class Entity
 {
 	public:
 		
-		Entity(Tile (&rarray)[400], int x, int y, int width, char charinput = '&');
-		void TileMove(Tile (&rarray)[400], int width, int x_offset, int y_offset);
+		Entity(VecMap2D* rarray, int x, int y, char charinput = '&');
+		void TileMove(VecMap2D* rarray, int x_offset, int y_offset);
 		int getCurrentPosX();
 		int getCurrentPosY();
 		int getHP();
