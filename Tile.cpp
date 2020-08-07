@@ -6,10 +6,6 @@ Tile::Tile(){
 	is_solid = false;
 }
 
-Entity* Tile::getEnt() {
-	return occupying_ent;
-}
-
 void Tile::entAppend(Entity* ent) {
 	occupying_ent = ent;
 	is_occupied = true;
@@ -28,4 +24,16 @@ bool Tile::isOccupied() {
 bool Tile::isSolid() {
 	return is_solid;
 
+}
+
+Entity* Tile::getEnt() {
+	return occupying_ent;
+}
+
+char Tile::getChar() {
+	return character;
+}
+
+WORD Tile::getAttribs() {
+	return attribs;
 }

@@ -12,58 +12,17 @@
 
 #include "Tile.h"
 #include "Entity.h"
+#include "Functions.h"
 #include "Structs.h"
 #include "Window2D.h"
 
+
 using namespace std;
 
-VecMap2D g_map_main;
-
+std::vector<std::vector<Tile>> g_map_main;
+Window2D RendSpace[5];
+HANDLE g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 std::vector<Entity*> g_ent_table;
-
-template<int l>
-void buffWrite(CHAR_INFO (&buffer)[l], int pos_x, int pos_y, int width, char character, WORD attrib = 0x0001) {
-    buffer[pos_y * width + pos_x].Char.UnicodeChar = character;
-    buffer[pos_y * width + pos_x].Attributes = attrib;
-
-}
-
-void buffWrite(CHAR_INFO* buffer, int pos_x, int pos_y, int width, char character, WORD attrib = 0x0001) {
-    buffer[pos_y * width + pos_x].Char.UnicodeChar = character;
-    buffer[pos_y * width + pos_x].Attributes = attrib;
-
-}
-
-template<int l>
-void buffWrite(CHAR_INFO(&buffer)[l], int pos_x, int pos_y, int width, string instring, WORD attrib = 0x0001) {
-    int strLength = instring.length();
-    for (int i = 0; i < strLength; i++) {
-        buffer[pos_y * width + pos_x+i].Char.UnicodeChar = instring[i];
-        buffer[pos_y * width + pos_x+i].Attributes = attrib;
-    }
-}
-
-template<int l>
-void buffWrite(CHAR_INFO(&buffer)[l], int pos_x, int pos_y, int width, StrShape2D inshape, WORD attrib = 0x0001) {
-    int in_width = inshape.width;
-    int in_height = inshape.height;
-    int v = 0;
-
-
-
-    for (int j = 0; j < in_width; j++) {
-        for (int i = 0; i < in_height; i++) {
-            if (inshape.content[j * in_width + i] == '.') {
-
-            }
-            else {
-                buffer[(pos_y + j) * width + pos_x + i].Char.UnicodeChar = inshape.content[j * in_width + i];
-                buffer[(pos_y + j) * width + pos_x + i].Attributes = attrib;
-            }
-        }
-
-    }
-}
 
 StrShape2D RectCreate(int x_dim, int y_dim, char borderChar){
     StrShape2D outShape;
@@ -104,7 +63,14 @@ void buffFill(CHAR_INFO buffinput[400], char charinput = '-', WORD attribs = 0x0
 
 void turn(int* turncount){
     *turncount = *turncount + 1;
-    //g_ent_table[1]->TileMove(g_map_array, 20, 1, 0);
+    //g_ent_table[1]->TileMove(&g_map_main, 1, 0);
+}
+
+void render() {
+    for (int i = 0; i < 5; i++) {
+        WriteConsoleOutputW(g_hConOut, RendSpace[i].text_buffer, RendSpace[i].dwBuffer, RendSpace[i].dwbuffercoord, &RendSpace[i].drawRect);
+
+    }
 }
 
 int main()
@@ -115,95 +81,78 @@ int main()
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);  
     //_setmode(_fileno(stdout), _O_U16TEXT);
-    HANDLE hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
     HWND ConScreen = GetConsoleWindow();
     CONSOLE_SCREEN_BUFFER_INFO csbi;
-    SetConsoleScreenBufferSize(hConOut, conBufferSize);
-    GetConsoleScreenBufferInfo(hConOut, &csbi);
+    SetConsoleScreenBufferSize(g_hConOut, conBufferSize);
+    GetConsoleScreenBufferInfo(g_hConOut, &csbi);
     ShowWindow(ConScreen, SW_SHOWMAXIMIZED);
-
-    CHAR_INFO write[400];
-
-    for (int i = 0; i < 400; i++) {
-        write[i].Char.UnicodeChar = '-';
-        write[i].Attributes = 0x008 | 0x0002;
-    }
-        
-    COORD dwbuffer = { 20 ,20 };
-    COORD dwbuffercoord = { 0,0 };
-    SMALL_RECT wRect{
-     5, 5, 25, 25
-
-    };
 
     int framecount = 0;
     int turn_count = 0;
 
-    g_map_main.height = 500;
-    g_map_main.width = 500;
-    for (int i = 0; i < g_map_main.width * g_map_main.height; i++) {
-        g_map_main.VecMap.push_back(new Tile);
+    for (int ii = 0; ii < 20; ii++) {
+        g_map_main.push_back(std::vector<Tile>());
+
+        for (int jj = 0; jj < 20; jj++) {
+            g_map_main[ii].push_back(Tile());
+        }
     }
 
+    /*g_map_main.height = 20;
+    g_map_main.width = 20;
+    for (int i = 0; i < g_map_main.width * g_map_main.height; i++) {
+        g_map_main.VecMap.push_back(new Tile);
+    }*/
 
-    Entity ent1(&g_map_main, 5, 5);
+    RendSpace[0] = Window2D(30, 5, 20, 20, ' ', 0x0008);
+    RendSpace[1] = Window2D(5, 5, 20, 20, '-', 0x0002);;
+    Window2D* game_space = &RendSpace[1];
+    Window2D* score_space = &RendSpace[0];
+
+    Entity ent1(&g_map_main, game_space, 4, 0);
     g_ent_table.push_back(&ent1);
-    g_ent_table.push_back(new Entity(&g_map_main, 2, 5, 'V'));
+    g_ent_table.push_back(new Entity(&g_map_main, game_space, 2, 5, 'V'));
 
-    StrShape2D coolrect = RectCreate(16, 16, ' ');
+    fct::buffWrite(&RendSpace[0], 0, 0, RectCreate(16, 16, ' '), 0x0010);
+    fct::buffWrite(&RendSpace[0], 1, 1, "Turn Count: ", 0x0008);
 
-    ConWindow2D window_2;
-    window_2.drawRect = { 30, 5, 45, 20 };
-
-    Window2D window_3(80, 5, 20, 20, ' ', 0x0008);
-
-    buffFill(window_2.text_buffer, ' ', 0x0008);
-
-    ConWindow2D RendSpace[5];
-    RendSpace[0] = window_2;
-    buffWrite(RendSpace[0].text_buffer, 0, 0, 20, coolrect, 0x0010);
-    buffWrite(RendSpace[0].text_buffer, 1, 1, 20, "Turn Count: ", 0x0008);
+    fct::buffWrite(&RendSpace[0], 1, 3, "X: ", 0x0008);
+    fct::buffWrite(&RendSpace[0], 7, 3, "Y: ", 0x0008);
+    
 
     while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         framecount++;
         if (_kbhit != 0) {
             if (GetAsyncKeyState(VK_UP)) {
                 ent1.TileMove(&g_map_main, 0, -1);
-                buffWrite(write, ent1.getOldCoords().x, ent1.getOldCoords().y, 20, '-', 0x0002);
                 turn(&turn_count);
             }
             else if (GetAsyncKeyState(VK_DOWN)) {
                 ent1.TileMove(&g_map_main, 0, 1);
-                buffWrite(write, ent1.getOldCoords().x, ent1.getOldCoords().y, 20, '-', 0x0002);
                 turn(&turn_count);
             }
             else if (GetAsyncKeyState(VK_LEFT)) {
                 ent1.TileMove(&g_map_main, -1, 0);
-                buffWrite(write, ent1.getOldCoords().x, ent1.getOldCoords().y, 20, '-', 0x0002);
                 turn(&turn_count);
             }
             else if (GetAsyncKeyState(VK_RIGHT)) {
                 ent1.TileMove(&g_map_main, 1, 0);
-                buffWrite(write, ent1.getOldCoords().x, ent1.getOldCoords().y, 20, '-', 0x0002);
                 turn(&turn_count);
             }
             else if (GetAsyncKeyState(0x42)) {
                 turn(&turn_count);
             }
         }
-        buffWrite(write, ent1.getCurrentPosX(), ent1.getCurrentPosY(), 20, ent1.character);
-        buffWrite(write, g_ent_table[1]->getCurrentPosX(), g_ent_table[1]->getCurrentPosY(), 20, g_ent_table[1]->character);
-        buffWrite(RendSpace[0].text_buffer, 1, 2, 20, std::to_string(turn_count), 0x0008);
+        fct::buffWrite(score_space, 3, 3, to_string(ent1.getCurrentPosX()), 0x0008);
+        fct::buffWrite(score_space, 9, 3, to_string(ent1.getCurrentPosY()), 0x0008);
+        fct::buffWrite(game_space, ent1.getCurrentPosX(), ent1.getCurrentPosY(), ent1.character);
+        fct::buffWrite(game_space, g_ent_table[1]->getCurrentPosX(), g_ent_table[1]->getCurrentPosY(), g_ent_table[1]->character);
+        fct::buffWrite(score_space, 1, 2, std::to_string(turn_count), 0x0008);
 
-        WriteConsoleOutputW(hConOut, window_3.text_buffer, window_3.dwBuffer, window_3.dwbuffercoord, &window_3.drawRect);
-        WriteConsoleOutputW(hConOut, write, dwbuffer, dwbuffercoord, &wRect);
-        WriteConsoleOutputW(hConOut, RendSpace[0].text_buffer, RendSpace[0].dwBuffer, RendSpace[0].dwbuffercoord, &RendSpace[0].drawRect);
-
+        render();
 
     }
-
-    wcout << "Hello World!\n";
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

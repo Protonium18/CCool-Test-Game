@@ -3,6 +3,10 @@
 #include <windows.h>
 
 
+Window2D::Window2D() {
+
+}
+
 Window2D::Window2D(short x, short y, short w, short h, char fillchar, WORD attribs) {
 	width = w;
 	height = h;
@@ -13,6 +17,7 @@ Window2D::Window2D(short x, short y, short w, short h, char fillchar, WORD attri
 		//std::cout << text_buffer[i].Attributes;
 		//std::cout << text_buffer[i].Char.AsciiChar;
 	}
+	dwBuffer = { width, height };
 
 
 }

@@ -4,15 +4,21 @@
 #include "Tile.h"
 #include "Structs.h"
 #include "Item.h"
+#include "Window2D.h"
+#include <vector>
 
+class Window2D;
 class Tile;
+class Item;
+struct VecMap2D;
+struct Coord2D;
 
 class Entity
 {
 	public:
 		
-		Entity(VecMap2D* rarray, int x, int y, char charinput = '&');
-		void TileMove(VecMap2D* rarray, int x_offset, int y_offset);
+		Entity(std::vector<std::vector<Tile>>* rarray, Window2D* activewindow, int x, int y, char charinput = '&');
+		void TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int y_offset);
 		int getCurrentPosX();
 		int getCurrentPosY();
 		int getHP();
@@ -32,6 +38,7 @@ class Entity
 		int old_pos_y;
 		Tile* occupied_tile;
 		Item inventory[9];
+		Window2D* active_window;
 };
 
 #endif // ENTITY_H

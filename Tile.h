@@ -1,7 +1,9 @@
 #ifndef TILE_H
 #define TILE_H
 
+#include <windows.h>
 #include "Entity.h"
+
 
 class Entity;
 
@@ -15,11 +17,15 @@ class Tile
 		bool isOccupied();
 		bool isSolid();
 		Entity* getEnt();
+		char getChar();
+		WORD getAttribs();
 
 	private:
 		Entity* occupying_ent;
 		bool is_occupied;
 		bool is_solid;
+		char character = '-';
+		WORD attribs = 0x0002;
 
 };
 
