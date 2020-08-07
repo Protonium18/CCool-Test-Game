@@ -118,6 +118,8 @@ int main()
 
     fct::buffWrite(&RendSpace[0], 1, 3, "X: ", 0x0008);
     fct::buffWrite(&RendSpace[0], 7, 3, "Y: ", 0x0008);
+
+    g_ent_table[1]->getCoords();
     
 
     while (true) {

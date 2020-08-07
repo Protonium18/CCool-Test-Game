@@ -25,7 +25,7 @@ void Entity::TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int 
 	int new_pos_y = pos_y + y_offset;
 
 	if (new_pos_x > -1 && new_pos_y > -1 && new_pos_x < rarray->size() && new_pos_y < rarray->at(0).size() ) {
-		Tile* tile_new = &rarray->at(new_pos_y).at(new_pos_x);
+		Tile* tile_new = &rarray->at(new_pos_x).at(new_pos_y);
 		if (tile_new->isOccupied() == false && tile_new->isSolid() == false) {
 
 			occupied_tile->entRemove();
@@ -84,6 +84,8 @@ void Entity::takeDamage(int damage) {
 
 Coord2D Entity::getCoords() {
 	Coord2D EntCoords = { pos_x, pos_y };
+	std::cout << pos_x << std::endl;
+	std::cout << pos_y << std::endl;
 	return EntCoords;
 }
 
