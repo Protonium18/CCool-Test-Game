@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <fstream>
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include<string>
@@ -8,7 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <ctime>
-
+#include <cwchar>
 
 #include "Tile.h"
 #include "Entity.h"
@@ -16,6 +17,10 @@
 #include "Structs.h"
 #include "Window2D.h"
 
+#define GM_ENGAGED 0
+#define GM_PAUSED 1
+#define GM_TITLE_SCREEN 2
+#define GM_INV 3
 
 using namespace std;
 
@@ -23,46 +28,16 @@ std::vector<std::vector<Tile>> g_map_main;
 Window2D RendSpace[5];
 HANDLE g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 std::vector<Entity*> g_ent_table;
+int g_framecount = 0;
+int g_turn_count = 0;
+int g_framebcounter = 0;
+bool g_blink = false;
+unsigned short game_state = GM_ENGAGED;
 
-StrShape2D RectCreate(int x_dim, int y_dim, char borderChar){
-    StrShape2D outShape;
-    outShape.width = x_dim;
-    outShape.height = y_dim;
 
-    int dpos;
 
-    for (int v = 0; v < x_dim * y_dim; v++) {
-        outShape.content.append(".");
-    }
-    
-    for (int i = 0; i < x_dim; i++) {
-        for (int j = 0; j < y_dim; j++) {
-            dpos = (j * x_dim + i);
-
-            if (i == 0 || i == x_dim - 1) {
-                outShape.content[dpos] = borderChar;
-            }
-            if (i > 0 && j == 0 || j == y_dim-1){
-                outShape.content[dpos] = borderChar;
-            }
-
-        }
-
-    }
-
-    return outShape;
-
-}
-
-void buffFill(CHAR_INFO buffinput[400], char charinput = '-', WORD attribs = 0x0001) {
-    for (int i = 0; i < 400; i++) {
-        buffinput[i].Char.UnicodeChar = charinput;
-        buffinput[i].Attributes = attribs;
-    }
-}
-
-void turn(int* turncount){
-    *turncount = *turncount + 1;
+void turn(){
+    g_turn_count = g_turn_count + 1;
     //g_ent_table[1]->TileMove(&g_map_main, 1, 0);
 }
 
@@ -73,8 +48,14 @@ void render() {
     }
 }
 
+void renderStart() {
+
+}
+
 int main()
 {
+
+
     short rows = 240;
     short columns = 240;
     COORD conBufferSize = { rows, columns };
@@ -86,26 +67,31 @@ int main()
     SetConsoleScreenBufferSize(g_hConOut, conBufferSize);
     GetConsoleScreenBufferInfo(g_hConOut, &csbi);
     ShowWindow(ConScreen, SW_SHOWMAXIMIZED);
+    CONSOLE_FONT_INFOEX cfi_to;
+    cfi_to.cbSize = sizeof(cfi_to);
+    cfi_to.nFont = 0;
+    cfi_to.dwFontSize.X = 12;
+    cfi_to.dwFontSize.Y = 12;
+    cfi_to.FontFamily = FF_DONTCARE;
+    cfi_to.FontWeight = FW_NORMAL;
+    wcscpy_s(cfi_to.FaceName, L"Arial");
+    //SetCurrentConsoleFontEx(g_hConOut, false, &cfi_to);
 
-    int framecount = 0;
-    int turn_count = 0;
+    
 
-    for (int ii = 0; ii < 20; ii++) {
+    for (int ii = 0; ii < 40; ii++) {
         g_map_main.push_back(std::vector<Tile>());
 
-        for (int jj = 0; jj < 20; jj++) {
+        for (int jj = 0; jj < 40; jj++) {
             g_map_main[ii].push_back(Tile());
         }
     }
 
-    /*g_map_main.height = 20;
-    g_map_main.width = 20;
-    for (int i = 0; i < g_map_main.width * g_map_main.height; i++) {
-        g_map_main.VecMap.push_back(new Tile);
-    }*/
+    RendSpace[0] = Window2D(50, 5, 20, 20, ' ', 0x0008);
+    RendSpace[1] = Window2D(5, 5, 40, 40, '-', 0x0002);;
+    Window2D cool1 = Window2D(4, 4, 42, 42, ' ', 0x00FF);;
+    WriteConsoleOutputW(g_hConOut, cool1.text_buffer, cool1.dwBuffer, cool1.dwbuffercoord, &cool1.drawRect);
 
-    RendSpace[0] = Window2D(30, 5, 20, 20, ' ', 0x0008);
-    RendSpace[1] = Window2D(5, 5, 20, 20, '-', 0x0002);;
     Window2D* game_space = &RendSpace[1];
     Window2D* score_space = &RendSpace[0];
 
@@ -113,44 +99,84 @@ int main()
     g_ent_table.push_back(&ent1);
     g_ent_table.push_back(new Entity(&g_map_main, game_space, 2, 5, 'V'));
 
-    fct::buffWrite(&RendSpace[0], 0, 0, RectCreate(16, 16, ' '), 0x0010);
+    fct::buffWrite(&RendSpace[0], 0, 0, fct::RectCreate(20, 20, ' '), 0x0010);
     fct::buffWrite(&RendSpace[0], 1, 1, "Turn Count: ", 0x0008);
 
     fct::buffWrite(&RendSpace[0], 1, 3, "X: ", 0x0008);
     fct::buffWrite(&RendSpace[0], 7, 3, "Y: ", 0x0008);
 
-    g_ent_table[1]->getCoords();
-    
+    g_map_main.at(5).at(10).getInv()->push_back(new Item);
+
+    unsigned short testint = 1;
 
     while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        framecount++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(60));
+        g_framecount++;
         if (_kbhit != 0) {
-            if (GetAsyncKeyState(VK_UP)) {
-                ent1.TileMove(&g_map_main, 0, -1);
-                turn(&turn_count);
-            }
-            else if (GetAsyncKeyState(VK_DOWN)) {
-                ent1.TileMove(&g_map_main, 0, 1);
-                turn(&turn_count);
-            }
-            else if (GetAsyncKeyState(VK_LEFT)) {
-                ent1.TileMove(&g_map_main, -1, 0);
-                turn(&turn_count);
-            }
-            else if (GetAsyncKeyState(VK_RIGHT)) {
-                ent1.TileMove(&g_map_main, 1, 0);
-                turn(&turn_count);
-            }
-            else if (GetAsyncKeyState(0x42)) {
-                turn(&turn_count);
+            if (game_state == 0) {
+                if (GetAsyncKeyState(0x57)) {
+                    ent1.TileMove(&g_map_main, 0, -1);
+                    turn();
+                }
+                else if (GetAsyncKeyState(0x53)) {
+                    ent1.TileMove(&g_map_main, 0, 1);
+                    turn();
+                }
+                else if (GetAsyncKeyState(0x41)) {
+                    ent1.TileMove(&g_map_main, -1, 0);
+                    turn();
+                }
+                else if (GetAsyncKeyState(0x44)) {
+                    ent1.TileMove(&g_map_main, 1, 0);
+                    turn();
+                }
+                else if (GetAsyncKeyState(0x47)) {
+                    ent1.takeItem(0);
+                }
+
+                else if (GetAsyncKeyState(0x42)) {
+                    turn();
+                }
             }
         }
+
+        for (int i = 0; i < 40; i++) {
+            for (int j = 0; j < 40; j++) {
+                Tile tile_render = g_map_main.at(i).at(j);
+                fct::buffWrite(game_space, i, j, tile_render.getChar(), tile_render.getAttribs());
+                if (tile_render.getInv()->size() > 0) {
+                    fct::buffWrite(game_space, i, j, 'i', tile_render.getInvItem(0)->getColor());
+                    /*if (g_blink == false) {
+                        fct::buffWrite(game_space, i, j, tile_render.getChar(), tile_render.getAttribs());
+                    }*/
+
+                    /*if(g_blink == true){
+                        fct::buffWrite(game_space, i, j, tile_render.getChar(), tile_render.getAttribs() | 0x0080);
+                        
+                    }*/
+                }
+            }
+        }
+
+        if (g_framecount % 10 == 0) {
+            g_framebcounter++;
+            if (g_framebcounter == 0) {
+                g_blink = true;
+            }
+
+            else if (g_framebcounter == 5) {
+                g_framebcounter = 0;
+                g_blink = false;
+            }
+
+
+        }
+
         fct::buffWrite(score_space, 3, 3, to_string(ent1.getCurrentPosX()), 0x0008);
         fct::buffWrite(score_space, 9, 3, to_string(ent1.getCurrentPosY()), 0x0008);
         fct::buffWrite(game_space, ent1.getCurrentPosX(), ent1.getCurrentPosY(), ent1.character);
         fct::buffWrite(game_space, g_ent_table[1]->getCurrentPosX(), g_ent_table[1]->getCurrentPosY(), g_ent_table[1]->character);
-        fct::buffWrite(score_space, 1, 2, std::to_string(turn_count), 0x0008);
+        fct::buffWrite(score_space, 1, 2, std::to_string(g_turn_count), 0x0008);
 
         render();
 
