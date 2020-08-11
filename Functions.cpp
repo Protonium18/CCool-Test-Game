@@ -75,8 +75,13 @@ namespace fct {
     std::ifstream openFile(std::string inputname) {
         std::ifstream file;
         file.open(inputname, std::ios::out);
-        return file;
-
+        if (file.is_open()) {
+            return file;
+        }
+        else {
+            std::cout << "Issue opening file!" << std::endl;
+        }
+        
     }
 
 }

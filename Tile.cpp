@@ -1,9 +1,39 @@
 #include "Tile.h"
 
+
 Tile::Tile(){
 	int v = 10;
-	is_occupied = false;
-	is_solid = false;
+	if (rand() % 20 == 1) {
+		is_solid = true;
+		character = 'X';
+		attribs = C_LIGHTGRAY;
+	}
+	else {
+		if (rand() % 500 == 1) {
+			inventory.push_back(new Item("items/Text.txt"));
+		}
+		is_occupied = false;
+		is_solid = false;
+	}
+}
+
+Tile::Tile(int input) {
+	switch (input) 
+	{
+		case 0:
+			character = ' ';
+			is_solid = true;
+			attribs = 0x00FF;
+			break;
+
+		case 1:
+			is_solid = false;
+			character = '-';
+			attribs = C_GREEN;
+			break;
+
+	}
+		
 }
 
 void Tile::entAppend(Entity* ent) {

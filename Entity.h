@@ -20,7 +20,7 @@ class Entity
 	public:
 		
 		Entity(std::vector<std::vector<Tile>>* rarray, Window2D* activewindow, int x, int y, char charinput = '&', std::string name_in = "Default");
-		void TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int y_offset);
+		bool TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int y_offset);
 		int getCurrentPosX();
 		int getCurrentPosY();
 		int getHP();

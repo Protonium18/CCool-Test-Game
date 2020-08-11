@@ -35,5 +35,10 @@ struct VecMap2D {
 
 };
 
+struct StrAnimShape2D {
+    StrShape2D frames[5];
+
+};
+
 
 #endif

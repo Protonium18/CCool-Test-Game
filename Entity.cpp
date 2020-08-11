@@ -8,7 +8,7 @@ Entity::Entity(std::vector<std::vector<Tile>>* rarray, Window2D* activewindow, i
 	equipped_item = inventory.at(0);
 }
 
-void Entity::TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int y_offset) {
+bool Entity::TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int y_offset) {
 	int new_pos_x = pos_x + x_offset;
 	int new_pos_y = pos_y + y_offset;
 
@@ -26,25 +26,29 @@ void Entity::TileMove(std::vector<std::vector<Tile>>* rarray, int x_offset, int 
 			fct::buffWrite(active_window, new_pos_x, new_pos_y, character);
 			pos_x = new_pos_x;
 			pos_y = new_pos_y;
-
+			
 			if (occupied_tile->getInv()->size() > 0) {
 				std::cout << "Items here!" << std::endl;
 			}
+			return true;
 		}
 
 		else if (tile_new->isOccupied() == true) {
 			Attack(tile_new->getEnt());
+			return false;
 		}
 
 		else if (tile_new->isSolid() == true) {
-
+			return false;
 		}
 
 		else {
+			return false;
 			std::wcout << "Invalid tile." << std::endl;
 		}
 	}
 	else {
+		return false;
 		std::cout << "Invalid tile!" << std::endl;
 	}
 }

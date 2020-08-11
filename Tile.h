@@ -3,6 +3,9 @@
 
 #include <windows.h>
 #include <vector>
+#include <stdlib.h>
+
+#include "Defs.h"
 #include "Entity.h"
 #include "Item.h"
 
@@ -14,7 +17,8 @@ class Tile
 {
 	public:
 		Tile();
-		int id = 40;
+		Tile(int input);
+		int id;
 		void entAppend(Entity* ent);
 		void entRemove();
 		bool isOccupied();
@@ -28,10 +32,10 @@ class Tile
 
 	private:
 		Entity* occupying_ent;
-		bool is_occupied;
+		bool is_occupied = false;
 		bool is_solid;
-		char character = '-';
-		WORD attribs = 0x0002;
+		char character = '~';
+		WORD attribs = C_GREEN;
 		std::vector<Item*> inventory;
 
 };
