@@ -2,6 +2,11 @@
 #define STRUCTS_H
 #include <string>
 #include <windows.h>
+#include <vector>
+
+#include "Tile.h"
+
+class Tile;
 
 struct Coord2D {
     int x;
@@ -20,6 +25,18 @@ struct ConWindow2D {
     COORD dwBuffer = {20, 20};
     COORD dwbuffercoord = { 0,0 };
     SMALL_RECT drawRect;
+
+};
+
+struct VecMap2D {
+    std::vector<Tile*> VecMap;
+    int width;
+    int height;
+
+};
+
+struct StrAnimShape2D {
+    StrShape2D frames[5];
 
 };
 
