@@ -1,6 +1,4 @@
-#include <iostream>
 #include "Window2D.h"
-#include <windows.h>
 
 
 Window2D::Window2D() {

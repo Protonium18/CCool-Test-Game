@@ -2,9 +2,12 @@
 #define TILE_H
 
 #include <windows.h>
+#include <vector>
 #include "Entity.h"
+#include "Item.h"
 
 
+class Item;
 class Entity;
 
 class Tile
@@ -19,6 +22,9 @@ class Tile
 		Entity* getEnt();
 		char getChar();
 		WORD getAttribs();
+		Item* getInvItem(int pos);
+		std::vector<Item*>* getInv();
+		void removeInvItem(int pos);
 
 	private:
 		Entity* occupying_ent;
@@ -26,6 +32,7 @@ class Tile
 		bool is_solid;
 		char character = '-';
 		WORD attribs = 0x0002;
+		std::vector<Item*> inventory;
 
 };
 

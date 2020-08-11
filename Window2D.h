@@ -1,6 +1,7 @@
 #ifndef WINDOWS2D_H
 #define WINDOWS2D_H
 
+#include <iostream>
 #include <windows.h>
 
 class Window2D

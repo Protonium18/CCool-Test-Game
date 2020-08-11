@@ -37,3 +37,15 @@ char Tile::getChar() {
 WORD Tile::getAttribs() {
 	return attribs;
 }
+
+Item* Tile::getInvItem(int pos) {
+	return inventory.at(pos);
+}
+
+std::vector<Item*>* Tile::getInv() {
+	return &inventory;
+}
+
+void Tile::removeInvItem(int pos) {
+	inventory.erase(inventory.begin()+pos);
+}
